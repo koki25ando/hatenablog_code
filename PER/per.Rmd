@@ -1,0 +1,230 @@
+---
+title: "PER"
+author: "Koki Ando"
+date: "12/3/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+```{r}
+pacman::p_load(tidyverse, data.table, naniar)
+stats = fread("Seasons_Stats.csv")
+head(stats)
+#miss_var_summary(stats)
+```
+
+
+```{r}
+stats %>% 
+  select(Year, Age) %>% 
+  group_by(Year) %>% 
+  summarise(Average_age = mean(Age, na.rm = T)) %>% 
+  ungroup() %>% 
+  # head()
+  ggplot(aes(Year, Average_age)) +
+  geom_line() +
+  labs(title = "Mean of Age by season")
+```
+
+
+```{r fig.width=7}
+'%!in%' <- function(x,y)!('%in%'(x,y))
+stats %>% 
+  filter(Pos %in% c("PG", "SG", "SF", "PF", "C")) %>% 
+  select(Year, Age, Pos) %>%
+  na.omit() %>% 
+  ggplot(aes(Age, fill = Pos)) +
+  geom_density(alpha = 0.4)
+  # geom_histogram(binwidth = 1)
+```
+
+
+
+
+```{r}
+stats %>% 
+  filter(Pos %in% c("PG", "SG", "SF", "PF", "C")) %>% 
+  # head
+  filter(Year > 2000 & G > 20 & Age < 40 & Age > 20) %>% 
+  mutate(Pos_category = ifelse(Pos %in% c("PG", "SG"), "BackCourt", "FrontCourt")) %>% 
+  ggplot(aes(Age)) +
+  geom_histogram(binwidth = 1, colour = "red")
+```
+
+```{r fig.width=8, fig.height = 4}
+stats %>% 
+  filter(Pos %in% c("PG", "SG", "SF", "PF", "C")) %>% 
+  # head
+  filter(Year > 2000 & G > 20 & Age < 40 & Age > 20) %>% 
+  mutate(Pos_category = ifelse(Pos %in% c("PG", "SG"), "BackCourt", "FrontCourt")) %>% 
+  tail
+  group_by(Age, Pos_category) %>% 
+  summarise(PER_mean_by_Age = mean(PER, na.rm = T)) %>% 
+  ungroup() %>% 
+  mutate(Peak_Age = ifelse(Pos_category == "BackCourt", 27, 25)) %>% 
+  # head
+  # head()
+  ggplot(aes(Age, PER_mean_by_Age, group = Pos_category, colour = Pos_category)) +
+  geom_line() +
+  geom_smooth(method = "loess", se = FALSE) +
+  labs(title = "Mean PER by age", y = "Average PER") +
+  geom_vline(aes(xintercept = Peak_Age), color = "blue", 
+             linetype = "solid", size = 1.0)+
+  # facet_wrap(~Pos_category) +
+  theme_minimal() +
+  theme(legend.position = c(.9, 0.8),
+        legend.background = element_rect(fill="grey", 
+                                  size=0.5, linetype="solid")) +
+  scale_x_continuous(breaks=seq(20, 40, 1)) +
+  facet_wrap(~Pos_category)
+```
+
+```{r fig.width=8, fig.height = 4}
+stats %>% 
+  filter(Pos %in% c("PG", "SG", "SF", "PF", "C")) %>% 
+  # head
+  filter(Year > 2000 & G > 20 & Age < 40 & Age > 20) %>% 
+  mutate(Pos_category = ifelse(Pos %in% c("PG", "SG"), "BackCourt", "FrontCourt")) %>% 
+  # head
+  group_by(Age, Pos_category) %>% 
+  summarise(PER_mean_by_Age = mean(PER, na.rm = T)) %>% 
+  ungroup() %>% 
+  # head()
+  ggplot(aes(Age, PER_mean_by_Age, group = Pos_category, colour = Pos_category)) +
+  geom_line() +
+  geom_smooth(method = "loess", se = FALSE) +
+  labs(title = "Mean PER by age", y = "Average PER") +
+  # facet_wrap(~Pos_category) +
+  theme_minimal() +
+  theme(legend.position = c(.9, 0.8),
+        legend.background = element_rect(fill="grey", 
+                                  size=0.5, linetype="solid")) +
+  scale_x_continuous(breaks=seq(20, 40, 1))
+  # facet_wrap(~Pos_category)
+```
+
+
+```{r}
+stats %>% 
+  filter(Pos %in% c("PG", "SG", "SF", "PF", "C")) %>% 
+  filter(Year > 2000 & G > 20 & Age < 40 & Age > 20) %>% 
+  mutate(Pos_category = ifelse(Pos %in% c("PG", "SG"), "BackCourt", "FrontCourt")) %>% 
+  # head
+  group_by(Age, Pos_category) %>% 
+  summarise(PER_trim_mean_by_Age = mean(PER, na.rm = T, trim = 0.2),
+            PER_median_by_Age = median(PER, na.rm = T)) %>% 
+  ungroup() %>% 
+  # head()
+  ggplot(aes(Age, PER_median_by_Age, group = Pos_category, colour = Pos_category)) +
+  geom_line() +
+  labs(title = "Transition of Trimming MEDIAN of PER")
+```
+
+
+
+# Summary Statistics
+
+```{r}
+stats %>% 
+  filter(Pos %in% c("PG", "SG", "SF", "PF", "C")) %>% 
+  filter(Year > 2000 & G > 20 & Age < 40 & Age > 20) %>% 
+  # head
+  group_by(Pos) %>% 
+  summarise(PER_mean = mean(PER, na.rm = T),
+            PER_std = sd(PER, na.rm = T),
+            PER_min = min(PER, na.rm = T),
+            PER_max = max(PER, na.rm = T)) %>% 
+  ungroup() %>% 
+  mutate(Pos_category = ifelse(Pos %in% c("PG", "SG"), "BackCourt", "FrontCourt")) %>% 
+  select(Pos_category, Pos, PER_min, PER_max, PER_mean, PER_std) %>%
+  mutate(Pos_num = case_when(
+                      Pos == "PG" ~ 1,
+                      Pos == "SG" ~ 2,
+                      Pos == "SF" ~ 3,
+                      Pos == "PF" ~ 4,
+                      Pos == "C" ~ 5 
+                      )) %>% 
+  arrange(Pos_num) %>% 
+  select(-Pos_num)
+```
+
+
+
+# Age Distribution
+
+## Simple histogram
+
+```{r fig.width=9, fig.height=4}
+stats %>% 
+  filter(Pos %in% c("PG", "SG", "SF", "PF", "C")) %>% 
+  filter(Year > 2000 & G > 20 & Age < 40 & Age > 20) %>% 
+  mutate(Pos_category = ifelse(Pos %in% c("PG", "SG"), "BackCourt", "FrontCourt")) %>% 
+  ggplot(aes(Age)) +
+  geom_histogram(binwidth = 1, colour = "red") +
+  facet_wrap(~Pos_category) +
+  scale_x_continuous(breaks=seq(20,40,1)) +
+  theme_minimal() +
+  labs(title = "Age distribution by position")
+```
+
+
+```{r fig.width=9, fig.height=4}
+stats %>% 
+  filter(Pos %in% c("PG", "SG", "SF", "PF", "C")) %>% 
+  # head
+  filter(Year > 2000 & G > 20 & Age < 40 & Age > 20) %>% 
+  mutate(Pos_category = ifelse(Pos %in% c("PG", "SG"), "BackCourt", "FrontCourt")) %>% 
+  select(-c(Tm:MP, "3PAr":PTS)) %>% 
+  group_by(Player) %>% 
+  mutate(PER_is_max = ifelse(PER == max(PER), 1, 0)) %>% 
+  ungroup() %>% 
+  filter(PER_is_max == 1) %>% 
+  ggplot(aes(Age)) +
+  geom_histogram(binwidth = 1, colour = "blue") +
+  facet_wrap(~Pos_category) +
+  scale_x_continuous(breaks=seq(20,40,1)) +
+  theme_minimal() +
+  labs(title = "Age distribution (when PER reached the highest in his career)")
+```
+
+## Curve fitting
+
+
+```{r fig.width=8, fig.height=4}
+stats %>% 
+  filter(Pos %in% c("PG", "SG", "SF", "PF", "C")) %>% 
+  filter(Year > 2000 & G > 20 & Age < 40 & Age > 20) %>% 
+  mutate(Pos_category = ifelse(Pos %in% c("PG", "SG"), "BackCourt", "FrontCourt")) %>%
+  # head
+  ggplot(aes(Age, PER, group = Player)) +
+  geom_line(show.legend = F) +
+  facet_wrap(~Pos_category)
+```
+
+```{r}
+library(plm)
+per_dat = stats %>% 
+  filter(Pos %in% c("PG", "SG", "SF", "PF", "C")) %>% 
+  filter(Year > 2000 & G > 20 & Age < 40 & Age > 20) %>% 
+  mutate(Pos_category = ifelse(Pos %in% c("PG", "SG"), "BackCourt", "FrontCourt")) %>% 
+  select(Player, Pos, Age, Pos_category, PER)
+
+plm_model = plm(PER ~ Age, data = per_dat, index = c("Player"), model = "within")
+summary(plm_model)
+fixef(plm_model)
+```
+
+
+
+
+# https://hoopshype.com/2018/12/31/nba-aging-curve-father-time-prime-lebron-james-decline/
+
+
+
+
+

@@ -1,0 +1,9 @@
+new("big.matrix.descriptor", description = list(sharedType = "FileBacked", 
+    filename = "mortgage-sample.bin", dirname = "/Users/KokiAndo/Desktop/R/hatenablog/HPC/", 
+    totalRows = 70000L, totalCols = 16L, rowOffset = c(0, 70000
+    ), colOffset = c(0, 16), nrow = 70000, ncol = 16, rowNames = NULL, 
+    colNames = c("enterprise", "record_number", "msa", "perc_minority", 
+    "tract_income_ratio", "borrower_income_ratio", "loan_purpose", 
+    "federal_guarantee", "borrower_race", "co_borrower_race", 
+    "borrower_gender", "co_borrower_gender", "num_units", "affordability", 
+    "year", "type"), type = "integer", separated = FALSE))
