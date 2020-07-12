@@ -1,0 +1,70 @@
+---
+title: "Untitled"
+author: "Koki Ando"
+date: "7/12/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Prep
+
+```{r}
+# install.packages("DataExplorer")
+library(DataExplorer)
+library(tidyverse)
+base_path='/Users/KokiAndo/Desktop/R/hatenablog/EDA'
+data = read.csv(file.path(base_path, 'data/train.csv'))
+```
+
+
+# DataExplorer Package
+
+[DataExplorer](https://www.rdocumentation.org/packages/DataExplorer/versions/0.8.1)
+
+```{r}
+introduce(data)
+plot_intro(data)
+plot_bar(data)
+plot_histogram(data)
+plot_qq(data)
+plot_correlation(data)
+```
+
+
+# inspectdf
+
+[inspectdf](https://alastairrushworth.github.io/inspectdf/)
+
+```{r}
+library(inspectdf)
+```
+
+## Data Overview
+
+```{r}
+inspect_types(data) %>% show_plot()
+```
+
+
+## Categorical Features
+
+[inspect_cat](https://alastairrushworth.github.io/inspectdf/articles/pkgdown/inspect_cat_examples.html)
+
+```{r}
+inspect_cat(data) %>% show_plot()
+```
+
+## numeric features
+
+(https://alastairrushworth.github.io/inspectdf/articles/pkgdown/inspect_cor_exampes.html)
+
+```{r}
+inspect_num(data) %>% show_plot()
+inspect_cor(data) %>% show_plot()
+```
+
+
+
